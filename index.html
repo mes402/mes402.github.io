@@ -743,8 +743,8 @@ button{font-family:var(--fb);touch-action:manipulation}
 @keyframes dash{to{stroke-dashoffset:-36}}
 #toast{position:fixed;z-index:1300;left:50%;top:calc(110px + var(--st));transform:translateX(-50%) translateY(-10px);opacity:0;transition:.3s;padding:10px 16px;font-size:13px;pointer-events:none}
 #toast.on{opacity:1;transform:translateX(-50%)}
-#acct{display:flex;align-items:center;gap:6px;margin-top:6px;justify-content:flex-end}
-#who{font-family:var(--fd);font-size:10px;letter-spacing:.12em;color:var(--c);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#hud{flex-wrap:wrap;row-gap:8px}#acct{display:flex;align-items:center;gap:10px;flex-basis:100%;padding-top:8px;border-top:1px solid var(--line)}
+#who{font-family:var(--fd);font-size:11px;letter-spacing:.12em;color:var(--c);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .chip{min-height:30px;padding:0 10px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--tx);font-size:11px;font-weight:600;cursor:pointer;position:relative}
 .chip:after{content:"";position:absolute;inset:-8px -4px}
 #sync{font-family:var(--fd);font-size:8px;letter-spacing:.14em;color:var(--mute)}#sync[data-st=offline]{color:#ff9bea}#sync[data-st=synced]{color:#5ef2b0}
@@ -767,7 +767,8 @@ button{font-family:var(--fb);touch-action:manipulation}
 <div id="map"></div><div id="vign"></div>
 <header id="hud" class="glass">
  <div class="tgt"><div class="eyebrow">Landfall · locate</div><div id="target">—</div><div id="hint">Tap the satellite map to drop your pin</div></div>
- <div class="tot"><div class="eyebrow" style="color:var(--m)">Today</div><div id="dayTotal">0</div><div id="daySub">0 guesses</div><div id="acct"><span id="sync" hidden></span><span id="who">GUEST</span><button class="chip" id="bLogin">Sign in</button><button class="chip" id="bLogout" hidden>Log out</button></div></div>
+ <div class="tot"><div class="eyebrow" style="color:var(--m)">Today</div><div id="dayTotal">0</div><div id="daySub">0 guesses</div></div>
+ <div id="acct"><span id="who">GUEST</span><span id="sync" hidden></span><span style="flex:1"></span><button class="chip" id="bLogin">Sign in</button><button class="chip" id="bLogout" hidden>Log out</button></div>
 </header>
 <nav id="dock">
  <button class="ib glass" id="bToday" aria-label="Today"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></button>
