@@ -2,7 +2,7 @@
 <!-- LANDFALL_V3 -->
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#05070f"><meta name="landfall-version" content="v3">
+<meta name="theme-color" content="#05070f"><meta name="landfall-version" content="v3.1-accounts">
 <title>Landfall v3 — satellite geo guessing</title>
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -743,6 +743,23 @@ button{font-family:var(--fb);touch-action:manipulation}
 @keyframes dash{to{stroke-dashoffset:-36}}
 #toast{position:fixed;z-index:1300;left:50%;top:calc(110px + var(--st));transform:translateX(-50%) translateY(-10px);opacity:0;transition:.3s;padding:10px 16px;font-size:13px;pointer-events:none}
 #toast.on{opacity:1;transform:translateX(-50%)}
+#acct{display:flex;align-items:center;gap:6px;margin-top:6px;justify-content:flex-end}
+#who{font-family:var(--fd);font-size:10px;letter-spacing:.12em;color:var(--c);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip{min-height:30px;padding:0 10px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--tx);font-size:11px;font-weight:600;cursor:pointer;position:relative}
+.chip:after{content:"";position:absolute;inset:-8px -4px}
+#sync{font-family:var(--fd);font-size:8px;letter-spacing:.14em;color:var(--mute)}#sync[data-st=offline]{color:#ff9bea}#sync[data-st=synced]{color:#5ef2b0}
+.tabs{display:flex;gap:6px;padding:4px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid var(--line);margin-bottom:14px}
+.tabs button{flex:1;min-height:44px;border:0;border-radius:10px;background:transparent;color:var(--mute);font-family:var(--fd);font-size:12px;letter-spacing:.14em;cursor:pointer}
+.tabs button.on{background:linear-gradient(100deg,rgba(34,232,255,.22),rgba(255,43,214,.22));color:#fff;box-shadow:inset 0 0 0 1px rgba(34,232,255,.4)}
+.fld{display:block;margin-bottom:12px}.fld span{display:block;font-size:11px;letter-spacing:.12em;color:var(--mute);text-transform:uppercase;margin-bottom:6px}
+.fld input{width:100%;min-height:50px;border-radius:14px;border:1px solid var(--line);background:rgba(3,8,18,.6);color:#fff;font-size:16px;padding:0 14px;font-family:var(--fb);outline:none;transition:.2s}
+.fld input:focus{border-color:var(--c);box-shadow:0 0 0 3px rgba(34,232,255,.18),0 0 18px rgba(34,232,255,.25)}
+.fld small{display:block;min-height:16px;font-size:12px;color:var(--mute);margin-top:5px}.fld small.ok,#authMsg.ok{color:#5ef2b0}.fld small.bad{color:#ff9bea}
+#authMsg{min-height:20px;font-size:13px;color:#ff9bea;margin:2px 0 12px;line-height:1.4}
+.cta:disabled{opacity:.6}.linkbtn{display:block;margin:12px auto 0;background:none;border:0;color:var(--mute);font-size:14px;min-height:44px;cursor:pointer;text-decoration:underline}
+.item.me{background:linear-gradient(90deg,rgba(34,232,255,.12),transparent);border-radius:10px}
+#auth{z-index:1250}
+
 #mode{position:fixed;z-index:1000;left:12px;bottom:calc(26px + var(--sb));font-family:var(--fd);font-size:9px;letter-spacing:.2em;padding:6px 10px;border-radius:10px;color:var(--c)}
 @media(min-width:900px){#hud{left:20px;right:auto;width:560px;margin:0}#dock{top:calc(20px + var(--st));right:20px}
  .sheet{left:auto;right:20px;bottom:20px;border-radius:24px;width:420px;transform:translateX(120%)}.sheet.open{transform:none}.grab{display:none}#target{font-size:24px}}
@@ -750,11 +767,13 @@ button{font-family:var(--fb);touch-action:manipulation}
 <div id="map"></div><div id="vign"></div>
 <header id="hud" class="glass">
  <div class="tgt"><div class="eyebrow">Landfall · locate</div><div id="target">—</div><div id="hint">Tap the satellite map to drop your pin</div></div>
- <div class="tot"><div class="eyebrow" style="color:var(--m)">Today</div><div id="dayTotal">0</div><div id="daySub">0 guesses</div></div>
+ <div class="tot"><div class="eyebrow" style="color:var(--m)">Today</div><div id="dayTotal">0</div><div id="daySub">0 guesses</div><div id="acct"><span id="sync" hidden></span><span id="who">GUEST</span><button class="chip" id="bLogin">Sign in</button><button class="chip" id="bLogout" hidden>Log out</button></div></div>
 </header>
 <nav id="dock">
  <button class="ib glass" id="bToday" aria-label="Today"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></button>
  <button class="ib glass" id="bHist" aria-label="History"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></button>
+ <button class="ib glass" id="bLb" aria-label="Leaderboard"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4zM7 6H3v2a4 4 0 004 4M17 6h4v2a4 4 0 01-4 4"/></svg></button>
+ <button class="ib glass" id="bAcct" aria-label="Account"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg></button>
  <button class="ib glass" id="bShare" aria-label="Share today"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 8l5-5 5 5M5 14v5a2 2 0 002 2h10a2 2 0 002-2v-5"/></svg></button>
 </nav>
 <div id="mode" class="glass">SAT</div>
@@ -769,7 +788,17 @@ button{font-family:var(--fb);touch-action:manipulation}
 <section id="hist" class="sheet glass panel"><div class="grab"></div>
  <h2>HISTORY <button class="x" data-close>×</button></h2><div class="grid" id="hStats"></div>
  <div class="eyebrow" style="margin-bottom:6px">Daily average · last 14 days</div><svg id="chart" viewBox="0 0 280 92" preserveAspectRatio="none"></svg>
- <div class="list" id="hList"></div><div class="actions"><button class="ghost danger" id="reset">Reset all data</button></div></section>
+ <div class="list" id="hList"></div><div class="actions"><button class="ghost danger" id="reset">Reset guest data</button></div></section>
+<section id="lb" class="sheet glass panel"><div class="grab"></div>
+ <h2>LEADERBOARD <button class="x" data-close>×</button></h2><div class="eyebrow" style="margin-bottom:8px">Today · <span id="lbDay"></span></div><div class="list" id="lbList"></div></section>
+<section id="auth" class="sheet glass panel"><div class="grab"></div>
+ <h2><span id="authTitle">SIGN IN</span> <button class="x" data-close>×</button></h2>
+ <form id="authForm" novalidate><div class="tabs"><button type="button" id="tabLogin" class="on">SIGN IN</button><button type="button" id="tabReg">REGISTER</button></div>
+  <label class="fld"><span>Username</span><input id="aUser" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="20" inputmode="text"><small id="uHint"></small></label>
+  <label class="fld"><span>Password</span><input id="aPass" type="password" autocomplete="current-password" minlength="8"><small id="pHint"></small></label>
+  <div id="authMsg" role="alert"></div><button class="cta" id="aSubmit" type="submit">SIGN IN</button>
+  <button type="button" class="linkbtn" id="aGuest">Keep playing as guest</button></form>
+ <div id="authImport" hidden><p id="impText" style="line-height:1.5;margin:0 0 16px"></p><button class="cta" id="impYes">IMPORT ROUNDS</button><button type="button" class="linkbtn" id="impNo">Not now</button></div></section>
 <div id="toast" class="glass"></div>
 <script>/* Leaflet 1.9.4 (BSD-2) */
 /* @preserve
@@ -802,6 +831,99 @@ const PLACES=[
 ["Port Moresby, PNG",-9.443,147.180],["Nouméa, New Caledonia",-22.276,166.458],["Apia, Samoa",-13.834,-171.770],["Great Barrier Reef (Cairns)",-16.920,145.770],["Alice Springs, Australia",-23.698,133.881],["Tarawa, Kiribati",1.451,172.971],["Nukuʻalofa, Tonga",-21.139,-175.204],["Guam (Hagåtña)",13.476,144.749],
 ["McMurdo Station, Antarctica",-77.846,166.676],["South Pole",-89.999,0.0],["Tristan da Cunha",-37.068,-12.311],["Saint Helena (Jamestown)",-15.925,-5.718],["Pitcairn Islands",-25.066,-130.101]
 ];
+// ---------- Accounts (Supabase) ----------
+const SB_URL='https://uvpaxxtrhfeuwmsbuunx.supabase.co';
+const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2cGF4eHRyaGZldXdtc2J1dW54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE2OTQwMDYsImV4cCI6MjEwNzI3MDAwNn0.DtTBGc5c87-_9h3SXd2_aNJcAdVqI8w7thYstSVpUyo';
+const SB_CDN='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+const EMAIL_DOMAIN='players.landfall.app',UNAME=/^[a-z0-9_]{3,20}$/;
+var ACC={sb:null,ready:false,user:null,name:null,rounds:[],mode:'guest'};
+function toRow(r){return{user_id:ACC.user.id,played_on:r.day,place:r.place,guess_lat:r.guess[0],guess_lng:r.guess[1],true_lat:r.truth[0],true_lng:r.truth[1],distance_km:r.km,points:r.pts}}
+function fromRow(x){return{day:x.played_on,place:x.place,guess:[x.guess_lat,x.guess_lng],truth:[x.true_lat,x.true_lng],km:+x.distance_km,pts:x.points,ts:Date.parse(x.created_at)||0}}
+function explain(err){const m=(err&&(err.message||err.error_description||err.msg))||String(err||'Unknown error'),c=err&&err.code;
+ if(/email not confirmed/i.test(m))return'Email confirmation is switched on for this project. The owner must disable “Confirm email” in Supabase (Auth → Providers → Email).';
+ if(/invalid login credentials/i.test(m))return'Wrong username or password.';
+ if(/already registered|already exists|duplicate key/i.test(m))return'That username is already taken.';
+ if(/signups not allowed|signup.*disabled/i.test(m))return'New sign-ups are disabled for this project.';
+ if(/rate limit|too many/i.test(m))return'Too many attempts — wait a minute and try again.';
+ if(/password/i.test(m)&&/(short|weak|least|characters)/i.test(m))return'Password rejected: '+m;
+ if(/database error saving new user|invalid username/i.test(m))return'Sign-up failed in the database (is landfall_schema.sql installed?).';
+ if(c==='PGRST202'||c==='PGRST205'||c==='42P01'||c==='42883'||/could not find|does not exist|schema cache/i.test(m))return'The Landfall database isn’t set up yet (run landfall_schema.sql).';
+ if(/failed to fetch|network|load failed/i.test(m))return'Can’t reach the server — check your connection.';
+ return m}
+// pending writes survive reloads/offline
+const pendKey=()=>'landfall.v3.pending.'+(ACC.user?ACC.user.id:'');
+const getPend=()=>{try{return JSON.parse(localStorage.getItem(pendKey()))||[]}catch(e){return[]}};
+const setPend=a=>{try{localStorage.setItem(pendKey(),JSON.stringify(a))}catch(e){}};
+async function flushPending(){if(!ACC.user)return;const p=getPend();if(!p.length)return;const{error}=await ACC.sb.from('rounds').insert(p.map(toRow));
+ if(!error){setPend([]);setSync('synced')}else setSync('offline',explain(error))}
+function recordRound(r){if(!ACC.user){DB.rounds.push(r);persist();return}
+ ACC.rounds.push(r);setPend(getPend().concat([r]));setSync('saving');flushPending()}
+function setSync(st,msg){const e=$('sync');if(!e)return;e.dataset.st=st;e.title=msg||'';e.textContent=st==='saving'?'SAVING…':st==='synced'?'SYNCED':st==='offline'?'NOT SYNCED':''
+ if(st==='offline'&&msg)toast(msg)}
+async function loadServer(){const out=[];for(let from=0;;from+=1000){const{data,error}=await ACC.sb.from('rounds').select('played_on,place,guess_lat,guess_lng,true_lat,true_lng,distance_km,points,created_at').order('created_at',{ascending:true}).range(from,from+999);
+ if(error)throw error;out.push(...data);if(data.length<1000)break}
+ const pend=getPend();ACC.rounds=out.map(fromRow).concat(pend)}
+function renderAcct(){const signed=!!ACC.user;$('who').textContent=signed?'@'+ACC.name:(ACC.mode==='nocloud'?'GUEST · OFFLINE':'GUEST');
+ $('bLogin').hidden=signed||ACC.mode==='nocloud';$('bLogout').hidden=!signed;$('sync').hidden=!signed;hud()}
+async function onSession(session){const u=session&&session.user;
+ if(!u){ACC.user=null;ACC.name=null;ACC.rounds=[];renderAcct();return}
+ if(ACC.user&&ACC.user.id===u.id)return;
+ ACC.user=u;ACC.name=(u.user_metadata&&u.user_metadata.username)||String(u.email||'').split('@')[0];renderAcct();setSync('saving');
+ try{await loadServer();await flushPending();setSync('synced')}catch(e){setSync('offline',explain(e))}
+ renderAcct();if($('today').classList.contains('open'))renderToday();if($('hist').classList.contains('open'))renderHist();offerImport()}
+function offerImport(){const g=DB.rounds.filter(r=>r.day===dkey()),k='landfall.v3.imported.'+ACC.user.id;let done=false;try{done=!!localStorage.getItem(k)}catch(e){}
+ if(!g.length||done)return;const s=sum(g);$('impText').textContent=`You played ${s.n} round${s.n==1?'':'s'} as a guest today (${s.t} pts). Add them to @${ACC.name}?`;
+ authView('import');open('auth');
+ $('impYes').onclick=async()=>{$('impYes').disabled=true;const{error}=await ACC.sb.from('rounds').insert(g.map(toRow));$('impYes').disabled=false;
+  if(error){authErr(explain(error));return}try{localStorage.setItem(k,'1')}catch(e){}ACC.rounds=ACC.rounds.concat(g).sort((a,b)=>a.ts-b.ts);hud();closeAll();toast(`Imported ${g.length} guest rounds`)};
+ $('impNo').onclick=()=>{try{localStorage.setItem(k,'skip')}catch(e){}closeAll()}}
+// ---------- auth UI ----------
+let authTab='login';
+function authView(v){['authForm','authImport'].forEach(i=>$(i).hidden=true);$(v==='import'?'authImport':'authForm').hidden=false;$('authTitle').textContent=v==='import'?'IMPORT':(authTab==='login'?'SIGN IN':'REGISTER');authErr('')}
+function authErr(m,ok){const e=$('authMsg');e.textContent=m;e.className=ok?'ok':''}
+function setTab(t){authTab=t;$('tabLogin').classList.toggle('on',t==='login');$('tabReg').classList.toggle('on',t==='register');$('aSubmit').textContent=t==='login'?'SIGN IN':'CREATE ACCOUNT';
+ $('aPass').autocomplete=t==='login'?'current-password':'new-password';$('uHint').textContent=t==='register'?'3–20 characters: a–z, 0–9, _':'';$('pHint').textContent=t==='register'?'At least 8 characters':'';authView('form');checkName()}
+let nameT=null,nameSeq=0;
+function checkName(){const v=$('aUser').value.trim().toLowerCase(),h=$('uHint');clearTimeout(nameT);if(authTab!=='register')return;
+ if(!v){h.textContent='3–20 characters: a–z, 0–9, _';h.className='';return}
+ if(!UNAME.test(v)){h.textContent='Use 3–20 characters: lowercase a–z, 0–9 or _';h.className='bad';return}
+ h.textContent='Checking…';h.className='';const my=++nameSeq;
+ nameT=setTimeout(async()=>{const{data,error}=await ACC.sb.rpc('username_available',{name:v});if(my!==nameSeq)return;
+  if(error){h.textContent=explain(error);h.className='bad'}else if(data){h.textContent='✓ Available';h.className='ok'}else{h.textContent='✗ Taken';h.className='bad'}},400)}
+async function submitAuth(ev){ev.preventDefault();const u=$('aUser').value.trim().toLowerCase(),pw=$('aPass').value;
+ if(!UNAME.test(u))return authErr('Username must be 3–20 characters: lowercase a–z, 0–9 or _.');
+ if(pw.length<8)return authErr('Password must be at least 8 characters.');
+ const email=`${u}@${EMAIL_DOMAIN}`,btn=$('aSubmit');btn.disabled=true;authErr(authTab==='login'?'Signing in…':'Creating account…',true);
+ try{if(authTab==='register'){const av=await ACC.sb.rpc('username_available',{name:u});if(av.error)throw av.error;if(av.data===false)throw new Error('already registered');
+   const{data,error}=await ACC.sb.auth.signUp({email,password:pw,options:{data:{username:u}}});if(error)throw error;
+   if(!data.session){if(data.user&&Array.isArray(data.user.identities)&&!data.user.identities.length)throw new Error('already registered');throw new Error('Email not confirmed')}
+   await onSession(data.session)}
+  else{const{data,error}=await ACC.sb.auth.signInWithPassword({email,password:pw});if(error)throw error;await onSession(data.session)}
+  $('aPass').value='';authErr('');if(!$('authImport').hidden)return;closeAll();toast(`Signed in as @${ACC.name}`)}
+ catch(e){authErr(explain(e))}finally{btn.disabled=false}}
+async function logout(){try{await ACC.sb.auth.signOut()}catch(e){}await onSession(null);toast('Signed out — playing as guest')}
+// ---------- leaderboard ----------
+async function renderLb(){const L=$('lbList');$('lbDay').textContent=dkey();if(!ACC.sb){L.innerHTML='<div class="empty">Leaderboard needs an internet connection.</div>';return}
+ L.innerHTML='<div class="empty">Loading…</div>';const{data,error}=await ACC.sb.rpc('daily_leaderboard',{day:dkey()});
+ if(error){L.innerHTML=`<div class="empty">${esc(explain(error))}</div>`;return}
+ if(!data||!data.length){L.innerHTML='<div class="empty">No scores yet today. Sign in and be first!</div>';return}
+ L.innerHTML=data.map((r,i)=>`<div class="item${ACC.name&&r.username===ACC.name?' me':''}"><span class="n">${String(i+1).padStart(2,'0')}</span><span class="p">@${esc(r.username)}</span><span class="k">${r.guesses} · avg ${Math.round(r.average_points)}</span><span class="s" style="width:64px">${Number(r.total_points).toLocaleString()}</span></div>`).join('')}
+// ---------- boot ----------
+function initAccounts(){
+ $('bAcct').onclick=()=>{if(ACC.user){toast(`Signed in as @${ACC.name}`)}else if(ACC.mode==='nocloud')toast('Accounts unavailable — guest mode (offline)');else{setTab(authTab);open('auth')}};
+ $('bLogin').onclick=$('bAcct').onclick;$('bLogout').onclick=logout;$('bLb').onclick=()=>{open('lb');renderLb()};
+ $('tabLogin').onclick=()=>setTab('login');$('tabReg').onclick=()=>setTab('register');$('aUser').oninput=checkName;$('authForm').onsubmit=submitAuth;$('aGuest').onclick=()=>closeAll();
+ renderAcct();
+ const fail=()=>{if(ACC.ready)return;ACC.mode='nocloud';ACC.ready=true;renderAcct()};
+ const sc=document.createElement('script');sc.src=SB_CDN;sc.async=true;const to=setTimeout(fail,10000);
+ sc.onerror=()=>{clearTimeout(to);fail()};
+ sc.onload=async()=>{clearTimeout(to);if(ACC.ready)return;try{
+   ACC.sb=window.supabase.createClient(SB_URL,SB_ANON,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,storageKey:'landfall.v3.auth'}});
+   ACC.mode='cloud';ACC.ready=true;renderAcct();
+   ACC.sb.auth.onAuthStateChange((ev,s)=>{if(ev==='SIGNED_OUT')onSession(null);else if(s)setTimeout(()=>onSession(s),0)});
+   const{data}=await ACC.sb.auth.getSession();await onSession(data.session);
+   window.addEventListener('online',flushPending)}catch(e){console.warn('Accounts disabled:',e);fail()}};
+ document.head.appendChild(sc)}
 // Landfall v3 — original game code
 var $=id=>document.getElementById(id);
 const KEY='landfall.v3',QKEY='landfall.v3.queue';
@@ -822,10 +944,11 @@ function fallback(){if(vector)return;map.removeLayer(sat);
 const dkey=(t=new Date())=>`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
 function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&Array.isArray(d.rounds))return d}catch(e){}return{rounds:[]}}
 let DB=load();const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){}};
-const today=()=>DB.rounds.filter(r=>r.day===dkey());
+const RS=()=>ACC.user?ACC.rounds:DB.rounds;
+const today=()=>RS().filter(r=>r.day===dkey());
 function sum(rs){const n=rs.length,t=rs.reduce((a,r)=>a+r.pts,0);return{n,t,avg:n?t/n:0,best:n?Math.min(...rs.map(r=>r.km)):null}}
-function byDay(){const m={};for(const r of DB.rounds)(m[r.day]=m[r.day]||[]).push(r);return Object.keys(m).sort().reverse().map(d=>({d,...sum(m[d])}))}
-function streak(){const days=new Set(DB.rounds.map(r=>r.day));let s=0,t=new Date();if(!days.has(dkey(t)))t.setDate(t.getDate()-1);while(days.has(dkey(t))){s++;t.setDate(t.getDate()-1)}return s}
+function byDay(){const m={};for(const r of RS())(m[r.day]=m[r.day]||[]).push(r);return Object.keys(m).sort().reverse().map(d=>({d,...sum(m[d])}))}
+function streak(){const days=new Set(RS().map(r=>r.day));let s=0,t=new Date();if(!days.has(dkey(t)))t.setDate(t.getDate()-1);while(days.has(dkey(t))){s++;t.setDate(t.getDate()-1)}return s}
 // ---- deck: shuffle-bag, no repeats until all used ----
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 let queue;try{queue=JSON.parse(localStorage.getItem(QKEY))||[]}catch(e){queue=[]}queue=queue.filter(i=>Number.isInteger(i)&&i>=0&&i<PLACES.length);
@@ -853,9 +976,9 @@ const tgIcon=L.divIcon({className:'',html:'<div class="tg"><i></i></div>',iconSi
 function setTarget(i){cur=i;const t=$('target');t.classList.add('swap');setTimeout(()=>{t.textContent=PLACES[i][0];t.classList.remove('swap')},180)}
 function next(){fx.clearLayers();locked=false;$('res').classList.remove('open');$('hint').textContent='Tap the satellite map to drop your pin';
  setTarget(draw(cur));map.flyTo([22,12],home(),{duration:.8})}
-map.on('click',e=>{if(locked||cur===null||anyPanel())return;locked=true;const p=PLACES[cur],g=e.latlng,gw=g.wrap();
+map.on('click',e=>{if(document.activeElement&&document.activeElement.tagName==='INPUT')return;if(locked||cur===null||anyPanel())return;locked=true;const p=PLACES[cur],g=e.latlng,gw=g.wrap();
  const k=km(gw.lat,gw.lng,p[1],p[2]),pts=score(k),before=sum(today()).t;
- DB.rounds.push({day:dkey(),place:p[0],guess:[+gw.lat.toFixed(4),+gw.lng.toFixed(4)],truth:[p[1],p[2]],km:+k.toFixed(1),pts,ts:Date.now()});persist();
+ recordRound({day:dkey(),place:p[0],guess:[+gw.lat.toFixed(4),+gw.lng.toFixed(4)],truth:[p[1],p[2]],km:+k.toFixed(1),pts,ts:Date.now()});
  let tl=p[2]+(g.lng-gw.lng);while(tl-g.lng>180)tl-=360;while(g.lng-tl>180)tl+=360;const t=L.latLng(p[1],tl);
  L.marker(g,{icon:xhIcon,interactive:false}).addTo(fx);
  const line=L.polyline(arc(g,t),{color:'#ff2bd6',weight:2.5,opacity:.95,className:'arc',interactive:false}).addTo(fx);
@@ -867,15 +990,15 @@ map.on('click',e=>{if(locked||cur===null||anyPanel())return;locked=true;const p=
 $('next').onclick=next;
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAll();else if((e.key==='Enter'||e.key===' ')&&$('res').classList.contains('open')&&!anyPanel()){e.preventDefault();next()}});
 // ---- panels ----
-const anyPanel=()=>$('today').classList.contains('open')||$('hist').classList.contains('open');
+const PANELS=['today','hist','lb','auth'];const anyPanel=()=>PANELS.some(i=>$(i).classList.contains('open'));
 function open(id){closeAll(true);$(id).classList.add('open');$('scrim').classList.add('on')}
-function closeAll(keep){['today','hist'].forEach(i=>$(i).classList.remove('open'));if(!keep)$('scrim').classList.remove('on')}
+function closeAll(keep){PANELS.forEach(i=>$(i).classList.remove('open'));if(!keep)$('scrim').classList.remove('on')}
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>closeAll());$('scrim').onclick=()=>closeAll();
 const stat=(v,l)=>`<div class="stat"><b>${v}</b><span>${l}</span></div>`;
 function renderToday(){const rs=today(),s=sum(rs);
  $('tStats').innerHTML=stat(s.t.toLocaleString(),'Points')+stat(s.n,'Guesses')+stat(Math.round(s.avg),'Avg')+stat(s.best==null?'—':fmtKm(s.best),'Best km');
  $('tList').innerHTML=rs.length?rs.map((r,i)=>`<div class="item"><span class="n">${String(i+1).padStart(2,'0')}</span><span class="p">${esc(r.place)}</span><span class="k">${fmtKm(r.km)} km</span><span class="s">+${r.pts}</span></div>`).reverse().join(''):'<div class="empty">No guesses yet today. Drop a pin to start.</div>'}
-function renderHist(){const days=byDay(),a=sum(DB.rounds);
+function renderHist(){const days=byDay(),a=sum(RS());
  $('hStats').innerHTML=stat(days.length,'Days')+stat(a.n,'Guesses')+stat(Math.round(a.avg),'Avg')+stat(streak()+'🔥','Streak');
  const last=days.slice(0,14).reverse(),W=280,H=92,bw=W/14;
  $('chart').innerHTML=`<defs><linearGradient id="gb" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#22e8ff"/><stop offset="1" stop-color="#ff2bd6"/></linearGradient></defs>`+
@@ -888,10 +1011,11 @@ function share(){const s=sum(today()),bars=today().slice(-20).map(r=>r.pts>=90?'
  const txt=`Landfall ${dkey()} — ${s.t} pts over ${s.n} guess${s.n==1?'':'es'} (avg ${Math.round(s.avg)}/100), best ${fmtKm(s.best)} km\n${bars}`;
  if(navigator.clipboard&&isSecureContext)navigator.clipboard.writeText(txt).then(()=>toast('Today\'s summary copied'),()=>prompt('Copy:',txt));else prompt('Copy:',txt)}
 $('bShare').onclick=share;$('tShare').onclick=share;
-$('reset').onclick=()=>{if(confirm('Reset ALL Landfall data? This erases today, history and streaks.')){DB={rounds:[]};persist();try{localStorage.removeItem(QKEY)}catch(e){}queue=[];renderHist();hud();toast('All data reset')}};
+$('reset').onclick=()=>{if(ACC.user){toast('Signed-in history lives on the server; log out to reset guest data');return}if(confirm('Reset ALL guest data on this device? This erases today, history and streaks.')){DB={rounds:[]};persist();try{localStorage.removeItem(QKEY)}catch(e){}queue=[];renderHist();hud();toast('Guest data reset')}};
 // day rollover while open
 let lastDay=dkey();setInterval(()=>{if(dkey()!==lastDay){lastDay=dkey();hud()}},30000);
 window.addEventListener('resize',()=>{if(!locked)map.setView([22,12],home())});
-hud();setTarget(draw(null));
-window.LANDFALL={map,place:()=>PLACES[cur]};
+hud();setTarget(draw(null));initAccounts();
+window.LANDFALL={map,place:()=>PLACES[cur],acc:()=>ACC};
+(function(){const f=()=>{if(innerWidth>=900){$('dock').style.top='';return}$('dock').style.top=Math.round($('hud').getBoundingClientRect().bottom+10)+'px'};f();addEventListener('resize',f);if(window.ResizeObserver)new ResizeObserver(f).observe($('hud'))})();
 </script></body></html>
