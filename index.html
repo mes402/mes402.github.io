@@ -1,8 +1,12 @@
 <!doctype html>
+<!-- LANDFALL_V3 -->
 <html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Landfall — endless map guessing</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070f"><meta name="landfall-version" content="v3">
+<title>Landfall v3 — satellite geo guessing</title>
 <link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>/* Leaflet 1.9.4 (BSD-2) */
 /* required styles */
 
@@ -658,7 +662,6 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
 /* Printing */
 
-#tiles{position:fixed;top:max(62px,calc(env(safe-area-inset-top) + 52px));right:10px;z-index:1000;padding:0 14px;min-height:44px;font-size:14px;background:#1e293b;color:#cbd5e1}
 @media print {
 	/* Prevent printers from removing background-images of controls. */
 	.leaflet-control {
@@ -668,24 +671,106 @@ svg.leaflet-image-layer.leaflet-interactive path {
 	}
 </style>
 <style>
-*{box-sizing:border-box}html,body{margin:0;height:100%;font-family:system-ui,-apple-system,sans-serif;background:#0f172a;color:#f8fafc;overscroll-behavior:none}
-#map{position:fixed;inset:0;background:#bcd7e6;touch-action:none}
-.bar{position:fixed;left:50%;transform:translateX(-50%);z-index:1000;background:rgba(15,23,42,.92);border-radius:14px;padding:10px 16px;box-shadow:0 4px 18px rgba(0,0,0,.3);text-align:center;width:max-content;max-width:94vw}
-#top{top:max(10px,env(safe-area-inset-top))}
-#stats{font-size:12px;opacity:.8}#stats b{color:#facc15}
-#target{font-size:20px;font-weight:700;margin:3px 0}
-#life{font-size:11px;opacity:.5}
-#share{position:fixed;top:max(10px,env(safe-area-inset-top));right:10px;z-index:1000;padding:0 14px;min-height:44px;font-size:14px;background:#1e293b;color:#f8fafc}
-#bottom{bottom:max(18px,env(safe-area-inset-bottom));display:none}
-#res{font-size:15px;margin-bottom:8px}#res b{font-size:22px;color:#facc15}
-button{background:#facc15;color:#0f172a;border:0;border-radius:10px;padding:0 30px;min-height:48px;font-size:17px;font-weight:700;cursor:pointer;touch-action:manipulation}
-#tiles{position:fixed;top:max(62px,calc(env(safe-area-inset-top) + 52px));right:10px;z-index:1000;padding:0 14px;min-height:44px;font-size:14px;background:#1e293b;color:#cbd5e1}
-@media(max-width:560px){.leaflet-control-zoom{display:none}#bottom{left:auto;right:10px;transform:none}#target{font-size:19px}#share{top:auto;bottom:max(18px,env(safe-area-inset-bottom));right:auto;left:10px}#tiles{top:auto;right:auto;left:10px;bottom:calc(max(18px,env(safe-area-inset-bottom)) + 54px)}}
+:root{--c:#22e8ff;--m:#ff2bd6;--bg:#05070f;--glass:rgba(10,16,32,.58);--line:rgba(120,220,255,.22);--tx:#e8f6ff;--mute:#8aa3b8;
+--fd:'Orbitron',ui-monospace,'SF Mono',Menlo,monospace;--fb:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;--sb:env(safe-area-inset-bottom);--st:env(safe-area-inset-top)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);font-family:var(--fb);overflow:hidden;overscroll-behavior:none}
+#map{position:fixed;inset:0;background:#030812;touch-action:none}
+.leaflet-container{font-family:var(--fb);background:#030812}
+.leaflet-control-attribution{background:rgba(5,7,15,.6)!important;color:#7f97ab!important;font-size:9px!important;backdrop-filter:blur(6px)}
+.leaflet-control-attribution a{color:#9fdcff!important}
+#vign{position:fixed;inset:0;pointer-events:none;z-index:400;background:radial-gradient(ellipse at center,transparent 55%,rgba(2,4,10,.55) 100%)}
+.glass{background:var(--glass);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);border:1px solid var(--line);
+ box-shadow:0 10px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06),0 0 24px rgba(34,232,255,.08);border-radius:20px}
+#hud{position:fixed;z-index:1000;top:calc(10px + var(--st));left:10px;right:10px;padding:12px 14px 12px 16px;display:flex;align-items:center;gap:12px;max-width:640px;margin:0 auto}
+#hud .tgt{flex:1;min-width:0}
+.eyebrow{font-family:var(--fd);font-size:10px;letter-spacing:.28em;color:var(--c);text-transform:uppercase;opacity:.9}
+#target{font-family:var(--fb);font-weight:700;font-size:21px;line-height:1.15;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .25s,transform .25s}
+#target.swap{opacity:0;transform:translateY(6px)}
+#hint{font-size:12px;color:var(--mute);margin-top:2px}
+.tot{text-align:right;padding-left:12px;border-left:1px solid var(--line)}
+#dayTotal{font-family:var(--fd);font-weight:800;font-size:24px;color:#fff;text-shadow:0 0 14px rgba(34,232,255,.7);font-variant-numeric:tabular-nums}
+#dayTotal.bump{animation:bump .6s ease}
+@keyframes bump{30%{transform:scale(1.18);color:var(--c)}}
+#daySub{font-size:11px;color:var(--mute);white-space:nowrap}
+#dock{position:fixed;z-index:1000;right:10px;top:calc(96px + var(--st));display:flex;flex-direction:column;gap:10px}
+.ib{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;cursor:pointer;color:var(--tx);font-size:19px;border:1px solid var(--line);padding:0}
+.ib:active{transform:scale(.94)}.ib svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
+button{font-family:var(--fb);touch-action:manipulation}
+.cta{width:100%;min-height:54px;border:0;border-radius:16px;font-family:var(--fd);font-weight:700;letter-spacing:.14em;font-size:15px;color:#041018;cursor:pointer;
+ background:linear-gradient(100deg,var(--c),#7af3ff 45%,var(--m));box-shadow:0 0 22px rgba(34,232,255,.45),0 0 40px rgba(255,43,214,.25)}
+.cta:active{transform:translateY(1px) scale(.99)}
+.ghost{min-height:44px;padding:0 16px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--tx);font-weight:600;font-size:14px;cursor:pointer}
+.ghost.danger{border-color:rgba(255,43,214,.45);color:#ff9bea}
+/* bottom sheet */
+.sheet{position:fixed;z-index:1100;left:0;right:0;bottom:0;margin:0 auto;max-width:560px;padding:10px 18px calc(18px + var(--sb));border-radius:26px 26px 0 0;
+ transform:translateY(110%);transition:transform .45s cubic-bezier(.2,.9,.2,1)}
+.sheet.open{transform:none}
+.grab{width:44px;height:5px;border-radius:9px;background:rgba(255,255,255,.22);margin:2px auto 12px}
+#res .row{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px}
+#resKm{font-family:var(--fd);font-size:26px;font-weight:700}#resKm small{font-size:13px;color:var(--mute);font-family:var(--fb);font-weight:500;margin-left:4px}
+#resPlace{font-size:13px;color:var(--mute);margin-top:4px}
+#resPts{font-family:var(--fd);font-weight:800;font-size:44px;line-height:1;background:linear-gradient(90deg,var(--c),var(--m));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 12px rgba(255,43,214,.45))}
+.meter{height:6px;border-radius:9px;background:rgba(255,255,255,.08);overflow:hidden;margin-bottom:16px}
+.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--c),var(--m));box-shadow:0 0 12px var(--c);transition:width .9s cubic-bezier(.2,.9,.2,1)}
+/* panels */
+.panel{max-height:82vh;display:flex;flex-direction:column;z-index:1200}
+.panel h2{font-family:var(--fd);font-size:15px;letter-spacing:.2em;margin:0 0 12px;color:var(--c);display:flex;justify-content:space-between;align-items:center}
+.panel .x{width:44px;height:44px;border-radius:14px;border:1px solid var(--line);background:transparent;color:var(--tx);font-size:20px;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.stat{padding:10px 8px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(120,220,255,.12);text-align:center}
+.stat b{display:block;font-family:var(--fd);font-size:17px;color:#fff}.stat span{font-size:10px;color:var(--mute);letter-spacing:.08em;text-transform:uppercase}
+.list{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;min-height:60px;margin:0 -4px;padding:0 4px}
+.item{display:flex;align-items:center;gap:10px;padding:11px 4px;border-bottom:1px solid rgba(120,220,255,.08);font-size:14px}
+.item .n{width:26px;font-family:var(--fd);font-size:11px;color:var(--mute)}.item .p{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .k{color:var(--mute);font-size:12px;white-space:nowrap}.item .s{font-family:var(--fd);font-weight:700;width:44px;text-align:right}
+.empty{color:var(--mute);font-size:14px;padding:18px 0;text-align:center}
+.actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}.actions .ghost{flex:1}
+#chart{width:100%;height:92px;display:block;margin-bottom:10px}
+#scrim{position:fixed;inset:0;z-index:1150;background:rgba(2,4,10,.5);opacity:0;pointer-events:none;transition:opacity .3s}#scrim.on{opacity:1;pointer-events:auto}
+/* markers */
+.xh{width:44px;height:44px;position:relative}
+.xh:before,.xh:after{content:"";position:absolute;background:var(--c);box-shadow:0 0 8px var(--c)}
+.xh:before{left:21px;top:0;width:2px;height:44px}.xh:after{top:21px;left:0;height:2px;width:44px}
+.xh i{position:absolute;inset:10px;border:2px solid var(--c);border-radius:50%;box-shadow:0 0 12px var(--c),inset 0 0 8px rgba(34,232,255,.5);animation:xin .35s ease-out}
+@keyframes xin{from{transform:scale(2.2);opacity:0}}
+.tg{width:22px;height:22px;position:relative}
+.tg i{position:absolute;inset:5px;border-radius:50%;background:var(--m);box-shadow:0 0 14px var(--m),0 0 4px #fff}
+.tg:before,.tg:after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--m);animation:pulse 1.8s ease-out infinite}
+.tg:after{animation-delay:.9s}
+@keyframes pulse{from{transform:scale(.6);opacity:1}to{transform:scale(3.4);opacity:0}}
+.arc{stroke-dasharray:8 10;animation:dash 1s linear infinite;filter:drop-shadow(0 0 4px #ff2bd6)}
+@keyframes dash{to{stroke-dashoffset:-36}}
+#toast{position:fixed;z-index:1300;left:50%;top:calc(110px + var(--st));transform:translateX(-50%) translateY(-10px);opacity:0;transition:.3s;padding:10px 16px;font-size:13px;pointer-events:none}
+#toast.on{opacity:1;transform:translateX(-50%)}
+#mode{position:fixed;z-index:1000;left:12px;bottom:calc(26px + var(--sb));font-family:var(--fd);font-size:9px;letter-spacing:.2em;padding:6px 10px;border-radius:10px;color:var(--c)}
+@media(min-width:900px){#hud{left:20px;right:auto;width:560px;margin:0}#dock{top:calc(20px + var(--st));right:20px}
+ .sheet{left:auto;right:20px;bottom:20px;border-radius:24px;width:420px;transform:translateX(120%)}.sheet.open{transform:none}.grab{display:none}#target{font-size:24px}}
 </style></head><body>
-<div id="map"></div>
-<div id="top" class="bar"><div id="stats"></div><div id="target"></div><div id="life"></div></div>
-<button id="share">Copy result</button><button id="tiles" class="small">Detailed tiles</button>
-<div id="bottom" class="bar"><div id="res"></div><button id="next">Next</button></div>
+<div id="map"></div><div id="vign"></div>
+<header id="hud" class="glass">
+ <div class="tgt"><div class="eyebrow">Landfall · locate</div><div id="target">—</div><div id="hint">Tap the satellite map to drop your pin</div></div>
+ <div class="tot"><div class="eyebrow" style="color:var(--m)">Today</div><div id="dayTotal">0</div><div id="daySub">0 guesses</div></div>
+</header>
+<nav id="dock">
+ <button class="ib glass" id="bToday" aria-label="Today"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></button>
+ <button class="ib glass" id="bHist" aria-label="History"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></button>
+ <button class="ib glass" id="bShare" aria-label="Share today"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 8l5-5 5 5M5 14v5a2 2 0 002 2h10a2 2 0 002-2v-5"/></svg></button>
+</nav>
+<div id="mode" class="glass">SAT</div>
+<div id="scrim"></div>
+<section id="res" class="sheet glass" aria-live="polite"><div class="grab"></div>
+ <div class="row"><div><div class="eyebrow">Distance</div><div id="resKm">0<small>km</small></div><div id="resPlace"></div></div>
+ <div style="text-align:right"><div class="eyebrow" style="color:var(--m)">Points</div><div id="resPts">+0</div></div></div>
+ <div class="meter"><i id="meter"></i></div><button class="cta" id="next">NEXT TARGET</button></section>
+<section id="today" class="sheet glass panel"><div class="grab"></div>
+ <h2>TODAY <button class="x" data-close>×</button></h2><div class="grid" id="tStats"></div><div class="list" id="tList"></div>
+ <div class="actions"><button class="ghost" id="tShare">Copy today's summary</button></div></section>
+<section id="hist" class="sheet glass panel"><div class="grab"></div>
+ <h2>HISTORY <button class="x" data-close>×</button></h2><div class="grid" id="hStats"></div>
+ <div class="eyebrow" style="margin-bottom:6px">Daily average · last 14 days</div><svg id="chart" viewBox="0 0 280 92" preserveAspectRatio="none"></svg>
+ <div class="list" id="hList"></div><div class="actions"><button class="ghost danger" id="reset">Reset all data</button></div></section>
+<div id="toast" class="glass"></div>
 <script>/* Leaflet 1.9.4 (BSD-2) */
 /* @preserve
  * Leaflet 1.9.4, a JS library for interactive maps. https://leafletjs.com
@@ -717,55 +802,96 @@ const PLACES=[
 ["Port Moresby, PNG",-9.443,147.180],["Nouméa, New Caledonia",-22.276,166.458],["Apia, Samoa",-13.834,-171.770],["Great Barrier Reef (Cairns)",-16.920,145.770],["Alice Springs, Australia",-23.698,133.881],["Tarawa, Kiribati",1.451,172.971],["Nukuʻalofa, Tonga",-21.139,-175.204],["Guam (Hagåtña)",13.476,144.749],
 ["McMurdo Station, Antarctica",-77.846,166.676],["South Pole",-89.999,0.0],["Tristan da Cunha",-37.068,-12.311],["Saint Helena (Jamestown)",-15.925,-5.718],["Pitcairn Islands",-25.066,-130.101]
 ];
-const map=L.map('map',{zoomControl:false,tapTolerance:15,doubleClickZoom:false,minZoom:0,zoomSnap:.25,maxZoom:8,maxBounds:[[-90,-200],[90,200]],maxBoundsViscosity:1});
-const home=()=>{const z=Math.max(0,Math.log2(Math.min(map.getSize().x/256/1.05,map.getSize().y/256/0.75)));return Math.max(map.getMinZoom(),Math.min(2,Math.floor(z*4)/4))};map.setView([25,10],home());
-// Default: embedded offline vector world (Natural Earth via world-atlas, public domain), no labels.
-const vr=L.svg({padding:.5});
-L.geoJSON(WORLD,{renderer:vr,interactive:false,style:{color:'#94a3b8',weight:.6,fillColor:'#e7e2d3',fillOpacity:1}}).addTo(map);
-map.attributionControl.addAttribution('Map data: Natural Earth (public domain)');
-// Optional unlabeled raster tiles (needs internet); falls back to vector automatically on error.
-let tiles=null;
-function setTiles(on){if(on&&!tiles){tiles=L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',{attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',subdomains:'abcd',maxZoom:8,minZoom:0});
- let errs=0;tiles.on('tileerror',()=>{if(++errs>=3){setTiles(false);$('tiles').textContent='Tiles unavailable';}});tiles.addTo(map)}
- else if(!on&&tiles){map.removeLayer(tiles);tiles=null}
- $('tiles').textContent=tiles?'Vector map':'Detailed tiles';try{localStorage.setItem('landfall.tiles',tiles?'1':'0')}catch(e){}}
-L.control.zoom({position:'bottomright'}).addTo(map);
-var $=id=>document.getElementById(id),layer=L.layerGroup().addTo(map),KEY='landfall.lifetime.v1',QKEY='landfall.queue.v1';
-let cur=null,locked=false,S={n:0,total:0,best:null,marks:[]};
-let LT=load(KEY,{n:0,total:0,best:null});
-function load(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}}
-function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+// Landfall v3 — original game code
+var $=id=>document.getElementById(id);
+const KEY='landfall.v3',QKEY='landfall.v3.queue';
+const map=L.map('map',{zoomControl:false,attributionControl:true,tapTolerance:15,doubleClickZoom:false,minZoom:1,maxZoom:10,zoomSnap:.25,
+ maxBounds:[[-85,-200],[85,200]],maxBoundsViscosity:1,worldCopyJump:false,fadeAnimation:true});
+const home=()=>{const s=map.getSize(),z=Math.log2(Math.min(s.x/256/1.02,s.y/256/0.8));return Math.max(1,Math.min(2.5,Math.floor(z*4)/4))};
+map.setView([22,12],home());map.attributionControl.setPrefix(false);
+// ---- base layers: satellite default, embedded vector fallback ----
+let vector=null,sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+ {attribution:'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community',maxZoom:10,maxNativeZoom:17,crossOrigin:true,keepBuffer:4}).addTo(map);
+let loaded=0,failed=0;
+sat.on('tileload',()=>loaded++);sat.on('tileerror',()=>{failed++;if(!loaded&&failed>=3)fallback()});
+setTimeout(()=>{if(!loaded)fallback()},8000);if(navigator.onLine===false)fallback();
+function fallback(){if(vector)return;map.removeLayer(sat);
+ vector=L.geoJSON(WORLD,{renderer:L.svg({padding:.5}),interactive:false,style:{color:'#22e8ff',opacity:.35,weight:.6,fillColor:'#0f2236',fillOpacity:1}}).addTo(map);
+ map.attributionControl.addAttribution('Offline map: Natural Earth (public domain)');$('mode').textContent='OFFLINE VECTOR';toast('Satellite unavailable — using offline map')}
+// ---- storage ----
+const dkey=(t=new Date())=>`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&Array.isArray(d.rounds))return d}catch(e){}return{rounds:[]}}
+let DB=load();const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){}};
+const today=()=>DB.rounds.filter(r=>r.day===dkey());
+function sum(rs){const n=rs.length,t=rs.reduce((a,r)=>a+r.pts,0);return{n,t,avg:n?t/n:0,best:n?Math.min(...rs.map(r=>r.km)):null}}
+function byDay(){const m={};for(const r of DB.rounds)(m[r.day]=m[r.day]||[]).push(r);return Object.keys(m).sort().reverse().map(d=>({d,...sum(m[d])}))}
+function streak(){const days=new Set(DB.rounds.map(r=>r.day));let s=0,t=new Date();if(!days.has(dkey(t)))t.setDate(t.getDate()-1);while(days.has(dkey(t))){s++;t.setDate(t.getDate()-1)}return s}
+// ---- deck: shuffle-bag, no repeats until all used ----
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-// Shuffle-bag: every place appears once before any repeats; persisted across visits.
-let queue=load(QKEY,[]).filter(i=>Number.isInteger(i)&&i>=0&&i<PLACES.length);
-function draw(){if(!queue.length){queue=shuffle(PLACES.map((_,i)=>i));if(cur!==null&&queue.length>1&&queue[queue.length-1]===cur)queue.unshift(queue.pop())}
- const i=queue.pop();save(QKEY,queue);return i}
-function km(a,b,c,d){const R=6371,t=Math.PI/180,x=Math.sin((c-a)*t/2)**2+Math.cos(a*t)*Math.cos(c*t)*Math.sin((d-b)*t/2)**2;return 2*R*Math.asin(Math.min(1,Math.sqrt(x)))}
-const pts=k=>Math.round(100*Math.exp(-k/1500));
-const emo=s=>s>=90?'🟩':s>=60?'🟨':s>=25?'🟧':'⬛';
-const fmt=k=>k==null?'—':Math.round(k).toLocaleString()+' km';
-function stats(){const avg=S.n?Math.round(S.total/S.n):0;
- $('stats').innerHTML=`Rounds <b>${S.n}</b> · Total <b>${S.total}</b> · Avg <b>${avg}</b> · Best <b>${fmt(S.best)}</b>`;
- $('life').textContent=`Lifetime: ${LT.n} rounds · avg ${LT.n?Math.round(LT.total/LT.n):0} · best ${fmt(LT.best)}`}
-function next(){layer.clearLayers();locked=false;$('bottom').style.display='none';cur=draw();$('target').textContent=PLACES[cur][0];map.flyTo([25,10],home(),{duration:.4});stats()}
-map.on('click',e=>{if(locked||cur===null)return;locked=true;const p=PLACES[cur],g=e.latlng.wrap(),t=L.latLng(p[1],p[2]);
- const k=km(g.lat,g.lng,t.lat,t.lng),s=pts(k);
- S.n++;S.total+=s;S.marks.push(emo(s));if(S.best==null||k<S.best)S.best=k;
- LT.n++;LT.total+=s;if(LT.best==null||k<LT.best)LT.best=k;save(KEY,LT);
- // draw on the same world copy as the click
- const off=e.latlng.lng-g.lng,tt=L.latLng(t.lat,t.lng+off);
- L.circleMarker(e.latlng,{radius:8,color:'#0f172a',weight:2,fillColor:'#38bdf8',fillOpacity:1}).addTo(layer);
- L.circleMarker(tt,{radius:9,color:'#0f172a',weight:2,fillColor:'#facc15',fillOpacity:1}).addTo(layer);
- L.polyline([e.latlng,tt],{color:'#0f172a',dashArray:'6 6',weight:2}).addTo(layer);
- map.flyToBounds(L.latLngBounds([e.latlng,tt]).pad(.5),{maxZoom:6,duration:.5});
- $('res').innerHTML=`${fmt(k)} away · <b>+${s}</b>`;$('bottom').style.display='block';stats()});
+let queue;try{queue=JSON.parse(localStorage.getItem(QKEY))||[]}catch(e){queue=[]}queue=queue.filter(i=>Number.isInteger(i)&&i>=0&&i<PLACES.length);
+function draw(prev){if(!queue.length){queue=shuffle(PLACES.map((_,i)=>i));if(queue.length>1&&queue[queue.length-1]===prev)queue.unshift(queue.pop())}const i=queue.pop();try{localStorage.setItem(QKEY,JSON.stringify(queue))}catch(e){}return i}
+// ---- geo ----
+const R=6371,rad=Math.PI/180;
+function km(a,b,c,d){const x=Math.sin((c-a)*rad/2)**2+Math.cos(a*rad)*Math.cos(c*rad)*Math.sin((d-b)*rad/2)**2;return 2*R*Math.asin(Math.min(1,Math.sqrt(x)))}
+const score=k=>Math.round(100*Math.exp(-k/1500));
+function arc(a,b,n=64){const[la1,lo1,la2,lo2]=[a.lat*rad,a.lng*rad,b.lat*rad,b.lng*rad];const dd=2*Math.asin(Math.sqrt(Math.sin((la2-la1)/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin((lo2-lo1)/2)**2));
+ if(dd<1e-6)return[a,b];const pts=[];let prev=null;for(let i=0;i<=n;i++){const f=i/n,A=Math.sin((1-f)*dd)/Math.sin(dd),B=Math.sin(f*dd)/Math.sin(dd);
+ const x=A*Math.cos(la1)*Math.cos(lo1)+B*Math.cos(la2)*Math.cos(lo2),y=A*Math.cos(la1)*Math.sin(lo1)+B*Math.cos(la2)*Math.sin(lo2),z=A*Math.sin(la1)+B*Math.sin(la2);
+ let lng=Math.atan2(y,x)/rad;const lat=Math.atan2(z,Math.hypot(x,y))/rad;if(prev!==null){while(lng-prev>180)lng-=360;while(prev-lng>180)lng+=360}prev=lng;pts.push([lat,lng])}
+ const off=a.lng-pts[0][1];return pts.map(p=>[p[0],p[1]+off])}
+// ---- UI helpers ----
+const fmtKm=k=>k==null?'—':k<10?k.toFixed(1):Math.round(k).toLocaleString();
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&','<':'<','>':'>','"':'"'}[c]));
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>e.classList.remove('on'),1800)}
+function countUp(el,from,to,ms,pre=''){const t0=performance.now();(function f(t){const p=Math.min(1,(t-t0)/ms),e=1-Math.pow(1-p,3);el.textContent=pre+Math.round(from+(to-from)*e).toLocaleString();if(p<1)requestAnimationFrame(f)})(t0)}
+function hud(animFrom){const s=sum(today());if(animFrom!=null){countUp($('dayTotal'),animFrom,s.t,900);const d=$('dayTotal');d.classList.remove('bump');void d.offsetWidth;d.classList.add('bump')}else $('dayTotal').textContent=s.t.toLocaleString();
+ $('daySub').textContent=`${s.n} guess${s.n==1?'':'es'} · avg ${Math.round(s.avg)}`}
+// ---- game ----
+const fx=L.layerGroup().addTo(map);let cur=null,locked=false;
+const xhIcon=L.divIcon({className:'',html:'<div class="xh"><i></i></div>',iconSize:[44,44],iconAnchor:[22,22]});
+const tgIcon=L.divIcon({className:'',html:'<div class="tg"><i></i></div>',iconSize:[22,22],iconAnchor:[11,11]});
+function setTarget(i){cur=i;const t=$('target');t.classList.add('swap');setTimeout(()=>{t.textContent=PLACES[i][0];t.classList.remove('swap')},180)}
+function next(){fx.clearLayers();locked=false;$('res').classList.remove('open');$('hint').textContent='Tap the satellite map to drop your pin';
+ setTarget(draw(cur));map.flyTo([22,12],home(),{duration:.8})}
+map.on('click',e=>{if(locked||cur===null||anyPanel())return;locked=true;const p=PLACES[cur],g=e.latlng,gw=g.wrap();
+ const k=km(gw.lat,gw.lng,p[1],p[2]),pts=score(k),before=sum(today()).t;
+ DB.rounds.push({day:dkey(),place:p[0],guess:[+gw.lat.toFixed(4),+gw.lng.toFixed(4)],truth:[p[1],p[2]],km:+k.toFixed(1),pts,ts:Date.now()});persist();
+ let tl=p[2]+(g.lng-gw.lng);while(tl-g.lng>180)tl-=360;while(g.lng-tl>180)tl+=360;const t=L.latLng(p[1],tl);
+ L.marker(g,{icon:xhIcon,interactive:false}).addTo(fx);
+ const line=L.polyline(arc(g,t),{color:'#ff2bd6',weight:2.5,opacity:.95,className:'arc',interactive:false}).addTo(fx);
+ setTimeout(()=>L.marker(t,{icon:tgIcon,interactive:false}).addTo(fx),350);
+ map.flyToBounds(line.getBounds().pad(.35),{paddingTopLeft:[20,110],paddingBottomRight:[20,innerWidth<900?250:40],maxZoom:6,duration:1.1});
+ $('resPlace').textContent=p[0];$('hint').textContent='Revealed — see your result below';
+ $('resKm').innerHTML=`${fmtKm(k)}<small>km off</small>`;$('meter').style.width='0';$('resPts').textContent='+0';
+ $('res').classList.add('open');setTimeout(()=>{$('meter').style.width=pts+'%';countUp($('resPts'),0,pts,900,'+')},250);hud(before)});
 $('next').onclick=next;
-document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&$('bottom').style.display==='block'){e.preventDefault();next()}});
-$('share').onclick=()=>{const avg=S.n?Math.round(S.total/S.n):0,m=S.marks.slice(-30).join('');
- const txt=`Landfall session — ${S.n} rounds, ${S.total} pts (avg ${avg}/100), best guess ${fmt(S.best)}\n${m}`;
- const done=()=>{$('share').textContent='Copied!';setTimeout(()=>$('share').textContent='Copy result',1500)};
- if(navigator.clipboard)navigator.clipboard.writeText(txt).then(done,()=>prompt('Copy:',txt));else prompt('Copy:',txt)};
-$('tiles').onclick=()=>setTiles(!tiles);
-next();
-try{if(localStorage.getItem('landfall.tiles')==='1')setTiles(true)}catch(e){}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAll();else if((e.key==='Enter'||e.key===' ')&&$('res').classList.contains('open')&&!anyPanel()){e.preventDefault();next()}});
+// ---- panels ----
+const anyPanel=()=>$('today').classList.contains('open')||$('hist').classList.contains('open');
+function open(id){closeAll(true);$(id).classList.add('open');$('scrim').classList.add('on')}
+function closeAll(keep){['today','hist'].forEach(i=>$(i).classList.remove('open'));if(!keep)$('scrim').classList.remove('on')}
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>closeAll());$('scrim').onclick=()=>closeAll();
+const stat=(v,l)=>`<div class="stat"><b>${v}</b><span>${l}</span></div>`;
+function renderToday(){const rs=today(),s=sum(rs);
+ $('tStats').innerHTML=stat(s.t.toLocaleString(),'Points')+stat(s.n,'Guesses')+stat(Math.round(s.avg),'Avg')+stat(s.best==null?'—':fmtKm(s.best),'Best km');
+ $('tList').innerHTML=rs.length?rs.map((r,i)=>`<div class="item"><span class="n">${String(i+1).padStart(2,'0')}</span><span class="p">${esc(r.place)}</span><span class="k">${fmtKm(r.km)} km</span><span class="s">+${r.pts}</span></div>`).reverse().join(''):'<div class="empty">No guesses yet today. Drop a pin to start.</div>'}
+function renderHist(){const days=byDay(),a=sum(DB.rounds);
+ $('hStats').innerHTML=stat(days.length,'Days')+stat(a.n,'Guesses')+stat(Math.round(a.avg),'Avg')+stat(streak()+'🔥','Streak');
+ const last=days.slice(0,14).reverse(),W=280,H=92,bw=W/14;
+ $('chart').innerHTML=`<defs><linearGradient id="gb" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#22e8ff"/><stop offset="1" stop-color="#ff2bd6"/></linearGradient></defs>`+
+  [25,50,75].map(v=>`<line x1="0" x2="${W}" y1="${H-v/100*(H-6)}" y2="${H-v/100*(H-6)}" stroke="rgba(120,220,255,.12)"/>`).join('')+
+  last.map((d,i)=>{const h=Math.max(3,d.avg/100*(H-6));return`<rect x="${i*bw+bw*.2}" y="${H-h}" width="${bw*.6}" height="${h}" rx="3" fill="url(#gb)"><title>${d.d}: avg ${Math.round(d.avg)}</title></rect>`}).join('')+
+  (last.length?'':`<text x="140" y="50" fill="#8aa3b8" font-size="12" text-anchor="middle">No days yet</text>`);
+ $('hList').innerHTML=days.length?days.map(d=>`<div class="item"><span class="p">${d.d===dkey()?'Today':d.d}</span><span class="k">${d.n} guesses · avg ${Math.round(d.avg)}</span><span class="s" style="width:64px">${d.t.toLocaleString()}</span></div>`).join(''):'<div class="empty">Your daily history will appear here.</div>'}
+$('bToday').onclick=()=>{renderToday();open('today')};$('bHist').onclick=()=>{renderHist();open('hist')};
+function share(){const s=sum(today()),bars=today().slice(-20).map(r=>r.pts>=90?'🟩':r.pts>=60?'🟨':r.pts>=25?'🟧':'⬛').join('');
+ const txt=`Landfall ${dkey()} — ${s.t} pts over ${s.n} guess${s.n==1?'':'es'} (avg ${Math.round(s.avg)}/100), best ${fmtKm(s.best)} km\n${bars}`;
+ if(navigator.clipboard&&isSecureContext)navigator.clipboard.writeText(txt).then(()=>toast('Today\'s summary copied'),()=>prompt('Copy:',txt));else prompt('Copy:',txt)}
+$('bShare').onclick=share;$('tShare').onclick=share;
+$('reset').onclick=()=>{if(confirm('Reset ALL Landfall data? This erases today, history and streaks.')){DB={rounds:[]};persist();try{localStorage.removeItem(QKEY)}catch(e){}queue=[];renderHist();hud();toast('All data reset')}};
+// day rollover while open
+let lastDay=dkey();setInterval(()=>{if(dkey()!==lastDay){lastDay=dkey();hud()}},30000);
+window.addEventListener('resize',()=>{if(!locked)map.setView([22,12],home())});
+hud();setTarget(draw(null));
+window.LANDFALL={map,place:()=>PLACES[cur]};
 </script></body></html>
